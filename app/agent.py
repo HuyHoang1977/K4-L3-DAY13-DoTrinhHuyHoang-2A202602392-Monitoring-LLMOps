@@ -3,12 +3,13 @@ from __future__ import annotations
 import os
 import time
 from dataclasses import dataclass
+from typing import Any
 
 from . import metrics
-from .mock_llm import FakeLLM
+from .mock_llm import FakeLLM, FakeResponse
 from .mock_rag import retrieve
 from .pii import hash_user_id, summarize_text
-from .prompt_management import resolve_prompt
+from .prompt_management import ResolvedPrompt, resolve_prompt
 from .tracing import get_langfuse_client, observe, propagate_attributes, tracing_enabled
 
 
@@ -51,7 +52,7 @@ class LabAgent:
             },
         ):
             started = time.perf_counter()
-            docs = retrieve(message)
+            docs = self._run_retrieval(langfuse_client, message)
             prompt = resolve_prompt(
                 langfuse_client,
                 feature=feature,
@@ -71,10 +72,10 @@ class LabAgent:
                 },
                 version=prompt.version,
             )
-            # TODO (CP2): instrument retrieve() and FakeLLM.generate() as child
-            # observations. The nested generation must receive prompt, usage and cost.
+            # CP2: child observation "llm-call" do _run_generation tạo, nhận
+            # prompt link, usage và cost. Không capture raw input/output.
             with propagate_attributes(prompt=prompt.managed_prompt):
-                response = self.llm.generate(prompt.text)
+                response = self._run_generation(langfuse_client, prompt)
             quality_score = self._heuristic_quality(message, response.text, docs)
             latency_ms = int((time.perf_counter() - started) * 1000)
             cost_usd = self._estimate_cost(response.usage.input_tokens, response.usage.output_tokens)
@@ -97,6 +98,45 @@ class LabAgent:
             cost_usd=cost_usd,
             quality_score=quality_score,
         )
+
+    def _run_retrieval(self, client: Any, message: str) -> list[str]:
+        start = getattr(client, "start_as_current_observation", None)
+        if start is None:
+            return retrieve(message)
+        with start(
+            name="retrieval",
+            as_type="retriever",
+            input={"query_preview": summarize_text(message)},
+        ) as span:
+            docs = retrieve(message)
+            span.update(output={"documents": docs})
+            return docs
+
+    def _run_generation(self, client: Any, prompt: ResolvedPrompt) -> FakeResponse:
+        start = getattr(client, "start_as_current_observation", None)
+        if start is None:
+            return self.llm.generate(prompt.text)
+        with start(
+            name="llm-call",
+            as_type="generation",
+            model=self.llm.model,
+            # managed_prompt -> Langfuse gắn prompt link cho span này
+            prompt=prompt.managed_prompt,
+            input=None,  # không capture raw prompt: có thể chứa PII
+        ) as span:
+            response = self.llm.generate(prompt.text)
+            span.update(
+                output=None,  # không capture raw output
+                usage_details={
+                    "input": response.usage.input_tokens,
+                    "output": response.usage.output_tokens,
+                },
+                cost_details={
+                    "input": round((response.usage.input_tokens / 1_000_000) * 3, 8),
+                    "output": round((response.usage.output_tokens / 1_000_000) * 15, 8),
+                },
+            )
+            return response
 
     def _estimate_cost(self, tokens_in: int, tokens_out: int) -> float:
         input_cost = (tokens_in / 1_000_000) * 3

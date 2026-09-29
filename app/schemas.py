@@ -10,6 +10,7 @@ class ChatRequest(BaseModel):
     user_id: str = Field(..., examples=["u_student_01"])
     session_id: str = Field(..., examples=["s_demo_01"])
     feature: str = Field(default="qa", examples=["qa", "summary"])
+    model: str = Field(default="claude-sonnet-4-5", examples=["claude-sonnet-4-5"])
     message: str = Field(..., min_length=1)
 
 

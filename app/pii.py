@@ -3,12 +3,25 @@ from __future__ import annotations
 import hashlib
 import re
 
+# PII patterns for scrubbing sensitive data from logs
+# Order matters: more specific patterns must come before generic ones to avoid misclassification
 PII_PATTERNS: dict[str, str] = {
-    "email": r"[\w\.-]+@[\w\.-]+\.\w+",
-    "phone_vn": r"(?<!\d)(?:\+84|0)(?:[ .-]?\d){9}(?!\d)",
+    "email": r"(?<![\w.+-])[\w.!#$%&'*+/=?^`{|}~-]+@[A-Za-z0-9](?:[A-Za-z0-9.-]*[A-Za-z0-9])?\.[A-Za-z]{2,}\b",
+    "phone_vn": r"(?<!\d)(?:\+84|0)[ .-]?(?:3|5|7|8|9)(?:[ .-]?\d){8}(?!\d)",
     "cccd": r"\b\d{12}\b",
     "credit_card": r"\b\d{4}[- ]?\d{4}[- ]?\d{4}[- ]?\d{4}\b",
-    # TODO: Add more patterns (e.g., Passport, Vietnamese address keywords)
+    # Vietnamese-specific ID patterns (must come before the generic address pattern)
+    "vietnamese_id": r"\b\d{9}\b",
+    "vietnamese_passport": r"\b[A-Z]\d{8}\b",
+    "vietnamese_driver_license": r"\b[A-Z]{2}\d{6}\b",
+    "vietnamese_health_insurance": r"\b\d{10}\b",
+    # Vietnamese address: anchored on a street keyword so ordinary numerics
+    # (versions, latencies, counts) are never mangled.
+    "vietnamese_address": (
+        r"\b(?:\d+[A-Za-z]?\s+)?"
+        r"(?:đường|duong|pho|phường|phuong|quận|quan|hẻm|hem|ấp|ap)\s+"
+        r"[^\s,;]+(?:\s+[^\s,;]+){0,4}"
+    ),
 }
 
 

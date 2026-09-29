@@ -1,25 +1,33 @@
 alerts:
-  - name: TODO_alert_1
-    severity: TODO
-    condition: TODO
-    duration: TODO
+  - name: user_visible_latency_burn
+    severity: critical
     type: symptom-based
+    condition: 'burn_rate_28d > 2 và p95(latency_ms của event == "response_sent") > 3000 trong 5 phút'
+    duration: 5m
     channel: slack
-    owner: TODO
+    slack_channel: '#llm-ops-oncall'
+    owner: 'Duty engineer k4-l3a (học viên trực)'
+    slo: fast_successful_requests
     runbook: docs/alerts.md#alert-1
-  - name: TODO_alert_2
-    severity: TODO
-    condition: TODO
-    duration: TODO
+
+  - name: retrieval_degradation
+    severity: critical
     type: symptom-based
+    condition: 'rate(tool_success == false) > 5% và tool_name == "retrieval" trong 10 phút'
+    duration: 10m
     channel: slack
-    owner: TODO
+    slack_channel: '#llm-ops-oncall'
+    owner: 'Duty engineer k4-l3a (học viên trực)'
+    slo: fast_successful_requests
     runbook: docs/alerts.md#alert-2
-  - name: TODO_alert_3
-    severity: TODO
-    condition: TODO
-    duration: TODO
+
+  - name: daily_cost_runway
+    severity: warning
     type: symptom-based
+    condition: 'sum(cost_usd của event == "response_sent") > 2.5 USD/ngày hoặc avg(tokens_out) tăng > 3x so với 7 ngày trước trong 30 phút'
+    duration: 30m
     channel: slack
-    owner: TODO
+    slack_channel: '#llm-ops-cost'
+    owner: 'Duty engineer k4-l3a (học viên trực)'
+    slo: fast_successful_requests
     runbook: docs/alerts.md#alert-3

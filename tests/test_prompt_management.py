@@ -42,8 +42,14 @@ class FallbackReturningPromptClient:
         return FallbackManagedPrompt()
 
 
-def test_local_prompt_fallback_keeps_lab_runnable_without_langfuse() -> None:
+def test_local_prompt_fallback_keeps_lab_runnable_without_langfuse(monkeypatch) -> None:
     from app.prompt_management import resolve_prompt
+
+    # This test asserts the built-in defaults, so it must not inherit a label
+    # from the ambient environment (e.g. the `LANGFUSE_PROMPT_LABEL=baseline`
+    # run used for the prompt rollback evidence in docs/PROMPT_VERSIONING.md).
+    monkeypatch.delenv("LANGFUSE_PROMPT_NAME", raising=False)
+    monkeypatch.delenv("LANGFUSE_PROMPT_LABEL", raising=False)
 
     resolved = resolve_prompt(
         UnexpectedPromptClient(),

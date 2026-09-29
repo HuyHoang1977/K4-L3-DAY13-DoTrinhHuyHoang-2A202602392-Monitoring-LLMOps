@@ -7,7 +7,14 @@ primary_slo:
     total_event: 'event == "request_received"'
   target_percent: 99.5
   error_budget_percent: 0.5
-  note: Học viên phải giải thích hoặc điều chỉnh ngưỡng bằng baseline của mình.
+  note: >-
+    Chọn 3000ms vì phân bố healthy trong workload của lab là P50 ~153ms,
+    P95 ~2213ms (request đầu tiên phải chờ fetch prompt từ Langfuse) và TTFT P95 ~51ms.
+    Ngưỡng 3s vì vậy nằm trên healthy tail nhưng vẫn dưới latency mà người dùng chịu
+    không nổi; cùng incident rag_slow đẩy latency lên ~2650ms/request và ăn hết
+    error budget trong 28 ngày.  Baseline trước khi sửa ghi được 0 lỗi
+    (64/64 response_sent trong data/logs.jsonl), nên error budget 0.5% tương
+    đương khoảng 21 request lỗi/ngày ở mức traffic hiện tại.
 guardrails:
   error_rate_pct_max: 2
   daily_cost_usd_max: 2.5
