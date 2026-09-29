@@ -5,8 +5,10 @@
 - **Họ và tên:** Đỗ Trình Huy Hoàng
 - **MSSV:** 2A202602392
 - **Lớp:** K4-L3A
-- **Repository URL:** (https://github.com/HuyHoang1977/K4-L3-DAY13-DoTrinhHuyHoang-2A202602392-Monitoring-LLMOps.git)
-- **Commit SHA cuối:** "finally"
+- **Repository URL:** https://github.com/HuyHoang1977/K4-L3-DAY13-DoTrinhHuyHoang-2A202602392-Monitoring-LLMOps
+- **Commit SHA cuối:** `b2f6812` — đây là commit chứa toàn bộ source + 14 ảnh evidence.
+  Dòng này nằm ở commit kế tiếp nên không thể tự trỏ SHA của chính nó (sửa nội dung commit
+  làm SHA đổi); SHA commit cuối cùng của nhánh `main` xem bằng `git log -1 --oneline`.
 - **Challenge ID:** chưa nhận challenge chính thức từ Lab Coach; phần điều tra chạy
   bằng **practice scenario `rag_slow`** (`scripts/inject_incident.py --scenario rag_slow`).
   Khi nhận được `config/challenge.json` riêng thì chạy lại `--challenge` và cập nhật mục 7.
