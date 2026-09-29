@@ -22,7 +22,6 @@ LANGFUSE_PROMPT_LABEL=production
 Nếu Langfuse không khả dụng, app dùng template local và trace metadata ghi `prompt_source=local` hoặc `local-fallback` thay vì giả vờ đã lấy được prompt managed.
 
 ## Việc cần làm
-
 1. Tạo version 1, gắn labels `baseline` và `production`.
 2. Tạo version 2 với một thay đổi nhỏ về format hoặc độ dài câu trả lời, gắn label `candidate`.
 3. Chạy cùng một input với `LANGFUSE_PROMPT_LABEL=baseline` và `candidate`.

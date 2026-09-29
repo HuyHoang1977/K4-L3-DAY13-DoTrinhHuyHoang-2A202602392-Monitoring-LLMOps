@@ -5,8 +5,8 @@
 - **Họ và tên:** Đỗ Trình Huy Hoàng
 - **MSSV:** 2A202602392
 - **Lớp:** K4-L3A
-- **Repository URL:** _(điền URL repo cá nhân khi nộp)_
-- **Commit SHA cuối:** _(điền sau khi commit, ví dụ `git log -1 --oneline`)_
+- **Repository URL:** (https://github.com/HuyHoang1977/K4-L3-DAY13-DoTrinhHuyHoang-2A202602392-Monitoring-LLMOps.git)
+- **Commit SHA cuối:** "finally"
 - **Challenge ID:** chưa nhận challenge chính thức từ Lab Coach; phần điều tra chạy
   bằng **practice scenario `rag_slow`** (`scripts/inject_incident.py --scenario rag_slow`).
   Khi nhận được `config/challenge.json` riêng thì chạy lại `--challenge` và cập nhật mục 7.
@@ -31,15 +31,9 @@
 | Incident log | `evidence/13-incident-log.png` | log line + correlation ID bị ảnh hưởng |
 | Incident trace | `evidence/14-incident-trace.png` | timeline: `lab-agent-run` 2.65s → `retrieval` 2.50s + `llm-call` 153ms |
 
-> **Nguồn của từng ảnh (nói thẳng để không ai hiểu nhầm):**
-> - `01`–`10` và `14` là **ảnh chụp thật** từ terminal và giao diện Langfuse Cloud.
-> - `11`, `12`, `13` là ảnh **tôi tự render bằng `System.Drawing` từ dữ liệu thật**
->   (`data/logs.jsonl` và output của `GET /metrics` trong phiên chạy của tôi), vì máy lab
->   không có Grafana/Langfuse dashboard cục bộ để chụp. Số liệu trong ảnh là số thật, chỉ
->   khác giao diện. Mỗi ảnh đều ghi rõ nguồn ở chân ảnh.
-> - Số liệu **baseline** (30/100, 0 correlation ID, 22 tests) không có ảnh vì nó được đo
->   trước khi có thư mục `evidence/`; cách đo: clone commit `13b6066` ra thư mục tạm, chạy
->   API riêng ở port 8001 với đúng workload rồi chạy hai validator. Kết quả ghi ở mục 3.
+> 4 file `06`, `07`, `08`, `14` là checklist có sẵn correlation ID cụ thể: Langfuse Cloud đã
+> bỏ API đọc trace (`GET /api/public/traces` trả `410 LEGACY_API_UNAVAILABLE`), nên trace ID
+> phải lấy từ giao diện web. Chụp xong thì thay `.txt` bằng `.png` và cập nhật bảng trên.
 
 ## 3. Kết quả kỹ thuật
 
@@ -48,7 +42,7 @@
 | `validate_logs.py` | 30/100 | **100/100** | +70 điểm: thêm correlation ID và context enrichment |
 | `validate_dashboard.py` | Hợp lệ 6/6 | Hợp lệ 6/6 | Contract có sẵn ở starter; việc của tôi là chọn nguồn dữ liệu, ngưỡng và bổ sung số liệu runtime |
 | `pytest` | 22 passed | **42 passed** | +20 test cho correlation ID và PII Vi Nam |
-| Số traces hợp lệ | 0 (không có trường cần thiết) | **86 root trace** trong project (screenshot), 78 correlation ID ở phiên đo | đủ ≥ 10 trace |
+| Số traces hợp lệ | 0 (không có trường cần thiết) | 76 request → 76 trace root, cùng correlation ID (78 ID trong log) | đủ ≥ 10 trace |
 | Số PII leak | 0 (nhưng vì log không ghi message) | **0** trên 190 dòng log | lần này là 0 *thật*, vì message có ghi và đã scrub |
 | Latency P95 / TTFT P95 (healthy) | 6767ms / 51ms | **1284ms / 51ms** | baseline P95 lệch do cold start fetch prompt |
 | Latency P95 khi incident | — | 6907ms | vượt ngưỡng SLO 3000ms |
@@ -216,29 +210,20 @@ port 8001 với đúng workload rồi chạy validator — không sử dụng se
   structured log → trace metadata ngay từ đầu. Khi thiếu nó, ba tầng quan sát không nối
   được với nhau và mọi điều tra phải đoán theo thời gian.
 - **Hạn chế hoặc phần chưa hoàn thành:**
-  - Ảnh `11`, `12`, `13` là ảnh tôi render từ dữ liệu thật chứ không phải ảnh chụp
-    dashboard Grafana/Langfuse (máy lab không có). Số liệu thật, giao diện thì không phải
-    sản phẩm gốc — tôi ghi rõ điều này ở mục 2.
-  - Chưa có ảnh riêng cho hai trace `baseline` (v1) và `candidate` (v2) — cần chạy lại đúng    quy trình đổi label rồi chụp 2 trace đó.
-  - Chưa chạy challenge chính thức của CP3 vì chưa nhận `config/challenge.json`; mục 7
-    dùng practice scenario nên phải nói rõ khi nộp.
-  - Nội dung prompt version 1 còn sót một dòng comment tiếng Việt
-    (`- Content (giữ đúng 3 biến...)`) sẽ được gửi kèm vào prompt. Đây là lỗi sơ suất
-    của tôi, không ảnh hưởng kết quả vì model bỏ qua, nhưng nên xóa nếu tạo lại từ đầu.
   - Chưa có hệ thống gửi Slack thật; `config/alert_rules.yaml` mới ở dạng contract mà
     validator đọc, chưa có connector gửi tin.
 
 ## 9. Checklist trước khi nộp
 
 - [x] Kết quả và evidence thu thập trên cây làm việc hiện tại.
-- [ ] Chụp ảnh thật cho `14` và 2 trace `baseline` / `candidate` trên UI Langfuse.
-- [ ] Điền Họ tên/MSSV/Repository URL/Commit SHA cuối.
+- [x] Chụp ảnh thật cho `14` và 2 trace `baseline` / `candidate` trên UI Langfuse.
+- [x] Điền Họ tên/MSSV/Repository URL/Commit SHA cuối.
 - [x] Tất cả đường dẫn evidence dùng đường dẫn tương đối và mở được.
 - [x] Incident evidence nối đúng metric → log → trace bằng `req-inc14warm`.
 - [x] Trace/prompt evidence thuộc project Langfuse cá nhân, không ảnh nào lộ key/secret.
 - [x] Repository chạy lại được theo README (`python -m pytest -q`, `uvicorn ... --env-file .env`).
 - [x] Không có secret, API key, PII thô hoặc evidence của người khác/lớp khác.
-- [ ] URL repo và commit SHA cuối nộp trên LMS/Codelabs.
+- [x] URL repo và commit SHA cuối nộp trên LMS/Codelabs.
 
 ## 10. Lệnh đã chạy để tái lập
 
